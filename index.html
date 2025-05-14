@@ -1,6 +1,6 @@
 <body>
     <input placeholder='What to send...' id='input'/>
-    <button onclick='sendRequest()'>
+    <button onclick='sendRequestByText()'>
         Send
     </button>
     <input placeholder='Select an image...' type='file' id='fileInput' />
@@ -19,7 +19,11 @@ fileInput.addEventListener("change", (event) => sendImage(event));
 // Models to use:
 // Coding - qwen2.5-coder
 // Vision - unitythemaker/llama3.2-vision-tools
-function sendRequest() {
+function sendRequestByText() {
+    sendRequest(input.value);
+}
+
+function sendRequest(prompt) {
     fetch('http://localhost/api/ai/chat', {
         method: 'POST',
         body: JSON.stringify({
@@ -31,7 +35,7 @@ function sendRequest() {
                 },
                 {
                     role: 'user',
-                    content: input.value
+                    content: prompt
                 }
             ],
             stream: false,
@@ -130,6 +134,8 @@ function sendImage(event) {
             try {
                 console.log(res.message.tool_calls[0].function.arguments.description);
                 output.innerText = res.message.tool_calls[0].function.arguments.description;
+
+                sendRequest(res.message.tool_calls[0].function.arguments.description);
             } catch {
                 console.log(res);
             }
