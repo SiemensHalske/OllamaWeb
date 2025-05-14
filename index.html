@@ -1,29 +1,68 @@
 <body>
-    <input placeholder="What to send..." id="input"/>
-    <button onclick="sendRequest()">
+    <input placeholder='What to send...' id='input'/>
+    <button onclick='sendRequest()'>
         Send
     </button>
+    <div id="output">
+        Answer incoming...
+    </div>
 </body>
 
 <script>
-const input = document.getElementById("input");
+const input = document.getElementById('input');
+const output = document.getElementById('output');
 
+// Models to use:
+// Coding - qwen2.5-coder
+// Vision - unitythemaker/llama3.2-vision-tools
 function sendRequest() {
-    fetch("http://localhost/api/ai/chat", {
-        method: "POST",
+    fetch('http://localhost/api/ai/chat', {
+        method: 'POST',
         body: JSON.stringify({
-            model: "codellama:7b",
+            model: 'qwen2.5-coder',
             messages: [
+                {
+                    role: 'system',
+                    content: 'You are the programmer of a team that only develops websites. Your role is to write the code for your team members. You will put all the code inside a single html file. Answer in JSON-Format.'
+                },
                 {
                     role: 'user',
                     content: input.value
                 }
             ],
             stream: false,
-            temperatur: 0.0
+            temperatur: 0.0,
+            tools: [
+                {
+                    type: 'function',
+                    function: {
+                        name: 'show_result',
+                        description: 'Puts the result inside a html-file and displays the result to the user.',
+                        parameters: {
+                            type: 'object',
+                            properties: {
+                                content: {
+                                    type: 'string',
+                                    description: 'The content that should be put inside the html-file.'
+                                }
+                            }
+                        },
+                        required: [
+                            'content'
+                        ]
+                    }
+                }
+            ]
         })
-    }).then(res => {
-        console.log(res);
+    })
+    .then(res => res.json())
+    .then(res => {
+        try {
+            console.log(res.message.tool_calls[0].function.arguments.content);
+            output.innerHTML = res.message.tool_calls[0].function.arguments.content;
+        } catch {
+            console.log(res);
+        }
     }).catch(e => {
         console.error(e);
     });
