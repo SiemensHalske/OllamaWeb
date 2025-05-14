@@ -3,14 +3,18 @@
     <button onclick='sendRequest()'>
         Send
     </button>
-    <div id="output">
+    <input placeholder='Select an image...' type='file' id='fileInput' />
+    <div id='output'>
         Answer incoming...
     </div>
 </body>
 
 <script>
 const input = document.getElementById('input');
+const fileInput = document.getElementById('fileInput');
 const output = document.getElementById('output');
+
+fileInput.addEventListener("change", (event) => sendImage(event));
 
 // Models to use:
 // Coding - qwen2.5-coder
@@ -66,5 +70,75 @@ function sendRequest() {
     }).catch(e => {
         console.error(e);
     });
+}
+
+function sendImage(event) {
+    const file = event.target.files[0];
+
+    console.log(file);
+
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+        console.log(reader.result.split(',')[1]);
+
+        fetch('http://localhost/api/ai/chat', {
+            method: 'POST',
+            body: JSON.stringify({
+                model: 'unitythemaker/llama3.2-vision-tools',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'You are the designer of a team that only develops websites. Your role is to describe the design given in the image by the client for your team members so that they can write the code. Answer in JSON-Format.'
+                    },
+                    {
+                        role: 'user',
+                        content: "Here is my image.",
+                        images: [
+                            reader.result.split(',')[1]
+                        ]
+                    }
+                ],
+                stream: false,
+                temperatur: 0.0,
+                tools: [
+                    {
+                        type: 'function',
+                        function: {
+                            name: 'give_description',
+                            description: 'Sends the description to the coding team so that they can code the website.',
+                            parameters: {
+                                type: 'object',
+                                properties: {
+                                    description: {
+                                        type: 'string',
+                                        description: 'The description that should be sent'
+                                    }
+                                }
+                            },
+                            required: [
+                                'description'
+                            ]
+                        }
+                    }
+                ]
+            })
+        })
+        .then(res => res.json())
+        .then(res => {
+            try {
+                console.log(res.message.tool_calls[0].function.arguments.description);
+                output.innerText = res.message.tool_calls[0].function.arguments.description;
+            } catch {
+                console.log(res);
+            }
+        }).catch(e => {
+            console.error(e);
+        });
+    };
+    reader.onerror = (error) => {
+        console.error(error);
+    };
 }
 </script>
