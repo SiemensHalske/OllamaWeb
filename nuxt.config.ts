@@ -5,5 +5,10 @@ export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/icon'],
   css: [
     '~/assets/css/main.css'
-  ]
+  ],
+  app: {
+    head: {
+      title: 'OllamaWeb'
+    }
+  }
 })

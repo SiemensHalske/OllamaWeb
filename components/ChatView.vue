@@ -1,8 +1,11 @@
 <template>
     <div class="container">
-        <div class="messageContainer">
-            <ChatMessage v-for="i in messages">
-                {{ i }}
+        <div class="messagesContainer">
+            <ChatMessage v-for="message in messages" :message="message" >
+                <div class="messageContent" v-if="!message.image">
+                    {{ message.content }}
+                </div>
+                <img :src="message.content" class="messageImage" v-if="message.image" />
             </ChatMessage>
         </div>
         <div class="inputContainer">
@@ -17,9 +20,10 @@
 
 <script setup lang="ts">
 import type { ModelRef } from 'vue';
+import type { ChatMessage } from '~/types/ChatMessage';
 import generate from '~/utils/GenerateCodeClient';
 
-const messages: Ref<string[]> = ref([]);
+const messages: Ref<ChatMessage[]> = ref([]);
 const input = ref();
 const generating = ref(false);
 
@@ -40,7 +44,14 @@ const contentUrl: ModelRef<string | undefined> = defineModel();
 // }
 
 function onImage(event: any) {
-    const file = event.target.files[0];
+    const files = (event.target as HTMLInputElement).files;
+
+    if(files == null || files.length <= 0) {
+        console.error("No image selected!");
+        return;
+    }
+
+    const file = files[0];
 
     console.log(file);
 
@@ -52,11 +63,22 @@ function onImage(event: any) {
             console.error("Couldn't load image!");
             return;
         }
+
+        messages.value.unshift({
+            content: reader.result,
+            user: true,
+            image: true
+        });
+
         const image = reader.result.split(',')[1];
 
         const prompt = input.value.value.length > 0 ? input.value.value : undefined;
         if(prompt != undefined) {
-            messages.value.unshift(prompt);
+            messages.value.unshift({
+                content: prompt,
+                user: true,
+                image: false
+            });
         }
         input.value.value = '';
         
@@ -72,10 +94,19 @@ function onImage(event: any) {
             if(res.error != undefined) {
                 throw new Error(res.error);
             }
-            contentUrl.value = res.url;
+
+            if(res.output?.prompt != undefined) {
+                messages.value.unshift({
+                    content: res.output.prompt,
+                    user: false,
+                    image: false
+                });
+            }
+            contentUrl.value = res.output?.url;
         })
-        .catch(e => {
+        .catch(async e => {
             console.error(e);
+            console.log(await e.json());
         })
         .finally(() => {
             generating.value = false;
@@ -94,7 +125,7 @@ function onImage(event: any) {
     align-content: end;
 }
 
-.messageContainer {
+.messagesContainer {
     display: flex;
 
     height: calc(100% - 90px);
@@ -108,6 +139,18 @@ function onImage(event: any) {
     flex-direction: column-reverse;
 
     background-color: #1e1a20;
+}
+
+.messageContent {
+    width: 100%;
+    height: fit-content;
+}
+
+.messageImage {
+    max-width: 100%;
+
+    border: inherit;
+    border-radius: inherit;
 }
 
 .inputContainer {

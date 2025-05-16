@@ -10,20 +10,32 @@ export default defineEventHandler(async (event) => {
     }
     if(getHeader(event, 'content-type') != 'application/json') {
         setResponseStatus(event, 400);
+
+        console.log('POST /api/generate 400')
+        
         return;
     }
 
     var body: PromptBody = await readBody(event);
     if(body == undefined) {
         setResponseStatus(event, 400);
+
+        console.log('POST /api/generate 400')
+
         return;
     }
 
-    console.log(body);
+    var response: GeneratedResponse = {};
     try {
         let prompt = await generatePrompt(body.image, body.prompt);
 
         console.log(prompt);
+
+        response = {
+            output: {
+                prompt: prompt
+            }
+        };
 
         let code = await generateCode(prompt);
 
@@ -33,15 +45,23 @@ export default defineEventHandler(async (event) => {
         
         fs.writeFileSync(`./public/output/${id}.html`, code);
 
-        return {
-            url: `output/${id}.html`
-        } as GeneratedResponse;
-    } catch(e) {
+        response = {
+            output: {
+                prompt: prompt,
+                url: `/output/${id}.html`
+            }
+        };
+
+        console.log('POST /api/generate 200')
+        
+        return response;
+    } catch(e: any) {
+        response.error = e.message;
         console.error(e);
         setResponseStatus(event, 500);
-        return {
-            error: 'Failed to generate content'
-        } as GeneratedResponse;
+
+        console.log('POST /api/generate 500')
+        return response;
     }
 })
 
@@ -111,7 +131,7 @@ async function generateCode(prompt: String): Promise<string> {
             messages: [
                 {
                     role: 'system',
-                    content: 'You are the programmer of a team that only develops websites. Your role is to write the code for your team members. You will put all the code inside a single html file. Answer in JSON-Format.'
+                    content: 'You are the programmer of a team that only develops websites. Your role is to write the code for your team members. You will put all the code inside a single html file. You are building the website without any framework in html, css and js. Answer in JSON-Format.'
                 },
                 {
                     role: 'user',

@@ -16,6 +16,9 @@ export default async function(image: String, prompt?: String): Promise<Generated
 }
 
 export interface GeneratedResponse {
-    url?: string,
+    output?: {
+        url?: string,
+        prompt: string
+    },
     error?: string
 }
