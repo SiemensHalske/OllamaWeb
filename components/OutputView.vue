@@ -1,16 +1,25 @@
 <template>
     <div class="container">
-        <iframe v-if="contentUrl" :src="contentUrl" />
+        <iframe v-if="contentUrl" :src="contentUrl" ref="frame" />
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const props = defineProps({
     contentUrl: {
         type: String,
         required: false
     }
 })
+defineExpose({
+    refreshFrame
+});
+
+const frame: Ref<HTMLIFrameElement | undefined> = ref();
+    
+function refreshFrame() {
+    frame.value?.contentWindow?.location.reload();
+}
 </script>
 
 <style scoped>

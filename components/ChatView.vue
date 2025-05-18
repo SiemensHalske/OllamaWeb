@@ -10,10 +10,11 @@
         </div>
         <div class="inputContainer">
             <input :placeholder="generating ? 'Generating...' : 'Add a prompt...'" ref="input" :disabled="generating" class="promptInput" />
-            <label for="fileInput" class="fileInputLabel">
+            <label for="fileInput" class="fileInputLabel" v-if="messages.length <= 0">
                 <Icon name="mdi:send-circle" class="send" />
             </label>
-            <input id="fileInput" type="file" @change="onImage" class="fileInput" accept="image/*" />
+            <input id="fileInput" type="file" @change="onImage" class="fileInput" accept="image/*" v-if="messages.length <= 0"/>
+            <Icon name="mdi:send-circle" class="send sendBtn" @click="onInput" tabindex="0" v-else/>
         </div>
     </div>
 </template>
@@ -21,27 +22,53 @@
 <script setup lang="ts">
 import type { ModelRef } from 'vue';
 import type { ChatMessage } from '~/types/ChatMessage';
-import generate from '~/utils/GenerateCodeClient';
+import { generate, generateWithImage } from '~/utils/GenerateCodeClient';
+
+const props = defineProps<{
+    refresh: () => void
+}>();
+const contentUrl: ModelRef<string | undefined> = defineModel();
 
 const messages: Ref<ChatMessage[]> = ref([]);
 const input = ref();
 const generating = ref(false);
 
-const contentUrl: ModelRef<string | undefined> = defineModel();
+function onInput() {
+    const text = input.value.value;
+    messages.value.unshift({
+        content: text,
+        image: false,
+        user: true
+    });
+    input.value.value = '';
+    generating.value = true;
 
-// function onInput() {
-//     let text = input.value.value;
-//     messages.value.unshift(text);
-//     input.value.value = '';
-//     generating.value = true;
+    const contentParts = contentUrl.value?.split('/');
+    if(contentParts != undefined) {
+        const id = contentParts[contentParts.length - 1].split('.')[0];
 
-//     let image = "";
+        generate(text, id)
+        .then(res => {
+            if(res == undefined) {
+                throw new Error('no result');
+            }
+            console.log(res);
 
-//     generate(image, text)
-//     .finally(() => {
-//         generating.value = false;
-//     });
-// }
+            if(res.error != undefined) {
+                throw new Error(res.error);
+            }
+            
+            props.refresh();
+        })
+        .catch(async e => {
+            console.error(e);
+            console.log(await e.json());
+        })
+        .finally(() => {
+            generating.value = false;
+        });
+    }
+}
 
 function onImage(event: any) {
     const files = (event.target as HTMLInputElement).files;
@@ -84,7 +111,7 @@ function onImage(event: any) {
         
         generating.value = true;
 
-        generate(image, prompt)
+        generateWithImage(image, prompt)
         .then(res => {
             if(res == undefined) {
                 throw new Error('no result');
@@ -139,6 +166,8 @@ function onImage(event: any) {
     flex-direction: column-reverse;
 
     background-color: #1e1a20;
+
+    overflow: auto;
 }
 
 .messageContent {
@@ -198,5 +227,9 @@ function onImage(event: any) {
     font-size: 40px;
 
     background-color: #dfb8f6;
+}
+
+.sendBtn {
+    margin: 0 10px;
 }
 </style>

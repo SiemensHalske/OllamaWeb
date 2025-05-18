@@ -10,5 +10,10 @@ export default defineNuxtConfig({
     head: {
       title: 'OllamaWeb'
     }
+  },
+  nitro: {
+    plugins: [
+      '~/server/plugins/logger.ts'
+    ]
   }
 })
