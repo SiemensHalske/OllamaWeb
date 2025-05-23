@@ -1,4 +1,5 @@
 import type { OllamaResponse, OllamaCodeResponse } from '~/types/Ollama';
+import chalk from 'chalk';
 
 export async function generateCode(prompt: String, currentCode?: string): Promise<string> {
     const messages = [];
@@ -52,8 +53,9 @@ export async function generateCode(prompt: String, currentCode?: string): Promis
     })).json();
 
     if(result == undefined || result.message.tool_calls == undefined || result.message.tool_calls.length <= 0) {
-        console.log('Failed to generate code');
-        throw new Error('Failed to generate code');
+        console.log(chalk.yellow('Failed to generate code. Trying again...'));
+        // throw new Error('Failed to generate code');
+        return generateCode(prompt, currentCode);
     }
 
     return result.message.tool_calls[0].function.arguments.content;

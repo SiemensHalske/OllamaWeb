@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
         return;
     }
     if(getHeader(event, 'content-type') != 'application/json') {
-        setResponseStatus(event, 400);        
+        setResponseStatus(event, 400);
         return;
     }
 
