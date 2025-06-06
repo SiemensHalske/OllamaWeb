@@ -1,9 +1,18 @@
 import fs from 'node:fs';
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from 'node:crypto';
 import { ImagePromptBody } from "~/types/PromptBody";
 import { GeneratedResponse } from "~/utils/GenerateCodeClient";
 import { generateCode } from "~/utils/GenerateCodeServer";
 import { generatePrompt } from "~/utils/GeneratePromptServer";
+
+interface CacheEntry {
+    prompt: string;
+    url: string;
+    timestamp: number;
+}
+
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+const cache = new Map<string, CacheEntry>();
 
 export default defineEventHandler(async (event) => {
     if(event.method != 'POST') {
@@ -21,6 +30,15 @@ export default defineEventHandler(async (event) => {
         return;
     }
 
+    const cacheKey = createHash('sha256')
+        .update(body.image + (body.prompt ?? ''))
+        .digest('hex');
+
+    const cached = cache.get(cacheKey);
+    if(cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        return { output: { prompt: cached.prompt, url: cached.url } } as GeneratedResponse;
+    }
+
     var response: GeneratedResponse = {};
     try {
         let prompt = await generatePrompt(body.image, body.prompt);
@@ -36,6 +54,8 @@ export default defineEventHandler(async (event) => {
         const id = randomUUID().toString();
         
         fs.writeFileSync(`./public/output/${id}.html`, code);
+
+        cache.set(cacheKey, { prompt, url: `/output/${id}.html`, timestamp: Date.now() });
 
         response = {
             output: {
