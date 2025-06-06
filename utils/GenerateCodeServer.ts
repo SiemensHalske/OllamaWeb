@@ -27,7 +27,7 @@ export async function generateCode(prompt: String, currentCode?: string): Promis
             model: 'qwen2.5-coder',
             messages,
             stream: false,
-            temperatur: 0.0,
+            temperature: 0.0,
             tools: [
                 {
                     type: 'function',

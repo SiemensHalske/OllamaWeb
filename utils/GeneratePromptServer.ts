@@ -23,7 +23,7 @@ export async function generatePrompt(image: String, prompt?: String): Promise<st
                 }
             ],
             stream: false,
-            temperatur: 0.5,
+            temperature: 0.5,
             tools: [
                 {
                     type: 'function',
