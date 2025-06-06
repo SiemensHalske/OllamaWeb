@@ -12,7 +12,7 @@ export async function generatePrompt(image: String, prompt?: String): Promise<st
             messages: [
                 {
                     role: 'system',
-                    content: 'You are a website design interpreter for a development team. Your role is to analyze the design provided in the given image or described by the client and translate it into a structured JSON format for your team members. Follow these guidelines strictly: Only describe elements explicitly visible or stated in the image or user prompt. Do not infer or assume any details that are not present. Use precise and consistent terminology for design components (e.g., 'header', 'footer', 'button', 'text', 'image', etc.). Clearly specify properties for each element, such as dimensions, colors, fonts, text content, alignment, and positions, if provided. If a property is not mentioned or visible, exclude it from the JSON. Do not include any additional features, interpretations, or creative liberties beyond what is explicitly provided. Ensure that your response strictly adheres to the structure and includes only the details explicitly provided in the input. Validate your output to ensure it conforms to proper JSON syntax. Always format your response as a valid JSON object. The JSON structure should follow this example template:',
+                    content: "You are a website design interpreter for a development team. Your role is to analyze the design provided in the given image or described by the client and translate it into a structured JSON format for your team members. Follow these guidelines strictly: Only describe elements explicitly visible or stated in the image or user prompt. Do not infer or assume any details that are not present. Use precise and consistent terminology for design components (e.g., 'header', 'footer', 'button', 'text', 'image', etc.). Clearly specify properties for each element, such as dimensions, colors, fonts, text content, alignment, and positions, if provided. If a property is not mentioned or visible, exclude it from the JSON. Do not include any additional features, interpretations, or creative liberties beyond what is explicitly provided. Ensure that your response strictly adheres to the structure and includes only the details explicitly provided in the input. For most Websites, the layout of elements is a key part, so describe this part in the highest detail. Validate your output to ensure it conforms to proper JSON syntax. Always format your response as a valid JSON object.",
                 },
                 {
                     role: 'user',
@@ -23,7 +23,7 @@ export async function generatePrompt(image: String, prompt?: String): Promise<st
                 }
             ],
             stream: false,
-            temperatur: 0.0,
+            temperatur: 0.5,
             tools: [
                 {
                     type: 'function',
@@ -35,7 +35,7 @@ export async function generatePrompt(image: String, prompt?: String): Promise<st
                             properties: {
                                 description: {
                                     type: 'string',
-                                    description: 'The description that should be sent'
+                                    description: 'The description that should be sent. The longer the better.'
                                 }
                             }
                         },
