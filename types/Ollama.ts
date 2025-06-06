@@ -1,10 +1,10 @@
 export interface OllamaResponse<T> {
-    model: String,
-    created_at: String,
+    model: string,
+    created_at: string,
     message: {
-        role: String,
-        content: String,
-        images?: String[],
+        role: string,
+        content: string,
+        images?: string[],
         tool_calls?: T[]
     },
     done: boolean,
@@ -18,7 +18,7 @@ export interface OllamaResponse<T> {
 
 export interface OllamaPromptResponse {
     function: {
-        name: String,
+        name: string,
         arguments: {
             description: string
         }
@@ -27,7 +27,7 @@ export interface OllamaPromptResponse {
 
 export interface OllamaCodeResponse {
     function: {
-        name: String,
+        name: string,
         arguments: {
             content: string
         }

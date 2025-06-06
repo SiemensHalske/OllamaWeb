@@ -1,6 +1,6 @@
 import type { PromptBody, ImagePromptBody } from "~/types/PromptBody";
 
-export async function generateWithImage(image: String, prompt?: String): Promise<GeneratedResponse> {
+export async function generateWithImage(image: string, prompt?: string): Promise<GeneratedResponse> {
     let request: ImagePromptBody = {
          image,
          prompt
@@ -15,7 +15,7 @@ export async function generateWithImage(image: String, prompt?: String): Promise
     });
 }
 
-export async function generate(prompt: String, id: String): Promise<GeneratedResponse> {
+export async function generate(prompt: string, id: string): Promise<GeneratedResponse> {
     let request: PromptBody = {
          prompt
     };

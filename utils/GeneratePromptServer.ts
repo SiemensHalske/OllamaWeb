@@ -1,7 +1,7 @@
 import type { OllamaResponse, OllamaPromptResponse } from '~/types/Ollama';
 import chalk from 'chalk';
 
-export async function generatePrompt(image: String, prompt?: String): Promise<string> {
+export async function generatePrompt(image: string, prompt?: string): Promise<string> {
     let result: OllamaResponse<OllamaPromptResponse> = await (await fetch('http://localhost:11434/api/chat', {
         method: 'POST',
         headers: {
