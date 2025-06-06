@@ -1,7 +1,7 @@
 import type { OllamaResponse, OllamaCodeResponse } from '~/types/Ollama';
 import chalk from 'chalk';
 
-export async function generateCode(prompt: String, currentCode?: string): Promise<string> {
+export async function generateCode(prompt: string, currentCode?: string): Promise<string> {
     const messages = [];
     messages.push({
         role: 'system',

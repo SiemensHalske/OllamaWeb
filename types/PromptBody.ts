@@ -1,8 +1,8 @@
 export interface ImagePromptBody {
-    prompt?: String,
-    image: String
+    prompt?: string,
+    image: string
 }
 
 export interface PromptBody {
-    prompt: String
+    prompt: string
 }
