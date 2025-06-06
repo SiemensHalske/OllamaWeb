@@ -16,6 +16,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, type Ref } from 'vue'
 const props = defineProps({
     contentUrl: {
         type: String,
