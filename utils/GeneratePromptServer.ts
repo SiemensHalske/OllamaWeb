@@ -8,7 +8,7 @@ export async function generatePrompt(image: string, prompt?: string, retries: nu
             'content-type': 'application/json'
         },
         body: JSON.stringify({
-            model: 'unitythemaker/llama3.2-vision-tools',
+            model: process.env.PROMPT_MODEL || 'unitythemaker/llama3.2-vision-tools',
             messages: [
                 {
                     role: 'system',

@@ -24,7 +24,7 @@ export async function generateCode(prompt: string, currentCode?: string, retries
             'content-type': 'application/json'
         },
         body: JSON.stringify({
-            model: 'qwen2.5-coder',
+            model: process.env.CODE_MODEL || 'qwen2.5-coder',
             messages,
             stream: false,
             temperature: 0.0,

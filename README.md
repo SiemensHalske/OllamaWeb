@@ -18,3 +18,14 @@ bun run dev
 ```
 
 3. Visit http://localhost:3000 to start using OllamaWeb
+
+### Configuration
+
+You can override the default Ollama models using environment variables:
+
+```bash
+export CODE_MODEL="qwen2.5-coder"
+export PROMPT_MODEL="unitythemaker/llama3.2-vision-tools"
+```
+
+Set these variables before starting the dev server to switch models without code changes.
