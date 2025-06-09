@@ -1,7 +1,10 @@
 import type { OllamaResponse, OllamaCodeResponse } from '~/types/Ollama';
 import chalk from 'chalk';
 
-export async function generateCode(prompt: string, currentCode?: string): Promise<string> {
+const MAX_RETRIES = 5;
+const INITIAL_DELAY_MS = 500;
+
+export async function generateCode(prompt: string, currentCode?: string, attempt = 0): Promise<string> {
     const messages = [];
     messages.push({
         role: 'system',
@@ -53,9 +56,14 @@ export async function generateCode(prompt: string, currentCode?: string): Promis
     })).json();
 
     if(result == undefined || result.message.tool_calls == undefined || result.message.tool_calls.length <= 0) {
-        console.log(chalk.yellow('Failed to generate code. Trying again...'));
-        // throw new Error('Failed to generate code');
-        return generateCode(prompt, currentCode);
+        if(attempt >= MAX_RETRIES) {
+            throw new Error('Failed to generate code after maximum retries');
+        }
+
+        const delay = INITIAL_DELAY_MS * (2 ** attempt);
+        console.log(chalk.yellow(`Failed to generate code. Retrying in ${delay}ms... (${attempt + 1}/${MAX_RETRIES})`));
+        await new Promise((res) => setTimeout(res, delay));
+        return generateCode(prompt, currentCode, attempt + 1);
     }
 
     return result.message.tool_calls[0].function.arguments.content;

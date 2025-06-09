@@ -1,7 +1,10 @@
 import type { OllamaResponse, OllamaPromptResponse } from '~/types/Ollama';
 import chalk from 'chalk';
 
-export async function generatePrompt(image: string, prompt?: string): Promise<string> {
+const MAX_RETRIES = 5;
+const INITIAL_DELAY_MS = 500;
+
+export async function generatePrompt(image: string, prompt?: string, attempt = 0): Promise<string> {
     let result: OllamaResponse<OllamaPromptResponse> = await (await fetch('http://localhost:11434/api/chat', {
         method: 'POST',
         headers: {
@@ -49,9 +52,14 @@ export async function generatePrompt(image: string, prompt?: string): Promise<st
     })).json();
 
     if(result == undefined || result.message.tool_calls == undefined || result.message.tool_calls.length <= 0) {
-        console.log(chalk.yellow('Failed to generate prompt from image. Trying again...'));
-        // throw new Error('Failed to generate prompt from image');
-        return generatePrompt(image, prompt);
+        if(attempt >= MAX_RETRIES) {
+            throw new Error('Failed to generate prompt from image after maximum retries');
+        }
+
+        const delay = INITIAL_DELAY_MS * (2 ** attempt);
+        console.log(chalk.yellow(`Failed to generate prompt from image. Retrying in ${delay}ms... (${attempt + 1}/${MAX_RETRIES})`));
+        await new Promise((res) => setTimeout(res, delay));
+        return generatePrompt(image, prompt, attempt + 1);
     }
 
     return result.message.tool_calls[0].function.arguments.description;
